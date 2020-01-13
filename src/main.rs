@@ -14,7 +14,12 @@ fn main() {
 
     let lines = read_lines("./kjv.txt");
 
-    for line in lines {
-        println!("{:?}", line);
-    }
+    let lines_iter = lines.unwrap();
+    lines_iter.for_each(|x| {
+        let line = x.unwrap(); 
+        if line.contains("Title:") {
+            println!("{}", line);    
+        }
+    });
+
 }
