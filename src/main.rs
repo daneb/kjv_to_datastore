@@ -2,8 +2,7 @@ use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
 use std::collections::HashMap;
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
+use regex::Regex;
 
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
 where P: AsRef<Path>, {
@@ -11,34 +10,66 @@ where P: AsRef<Path>, {
     Ok(io::BufReader::new(file).lines())
 }
 
-fn calculate_hash<T: Hash>(t: &T) -> u64 {
-    let mut s = DefaultHasher::new();
-    t.hash(&mut s);
-    s.finish()
+#[derive(Clone)]
+pub struct Verse {
+    number: String,
+    text: String
 }
 
+// Data we have
+// <Book> -> <Chapter>
+//           <Chapter>-><Verse>
+//                      <Number=> Text>
+
+// Data structure
+// {k;v}
+// 
 
 fn main() {
 
-    let mut title_hash : u64 = 0;
+    let mut title: String = String::from("");
+    let mut chapter: String = String::from("");
+    let mut verse_no: String = String::from("");
+    let mut verse: String = String::from("");
+
     // let mut bible_store = HashMap::new();
-    let mut verses: Vec<String> = Vec::new();
+    let mut bible: HashMap<String, HashMap<String, Verse>> = HashMap::new();
+    let mut chapterHash: HashMap<String, Verse> = HashMap::new();
 
     let filename = "kjv.txt";
     println!("In file {}", filename);
 
-    let lines = read_lines("./kjv.txt");
+    let matched = Regex::new(r"^\d{1,}:\d{1,}").unwrap();
+    let lines = read_lines("./kjv_abridged.txt");
     let lines_iter = lines.unwrap();
+    
+    'outer: for x in lines_iter {
 
-    lines_iter.for_each(|x| {
-        let line = x.unwrap(); 
-        if line.contains("Title:") {
-            title_hash = calculate_hash(&line);
+        let line = x.unwrap();
+        
+        if line.is_empty() {
+            continue 'outer;
+        } else if line.contains("Title") {
+            title = line.replace("Title:", "");
+        } else if matched.is_match(&line) {
+
+            if !verse.is_empty() {
+                chapterHash.insert(chapter, Verse {
+                    number: verse_no,
+                    text: verse,
+                });
+            }
+
+            let v: Vec<&str> = line.splitn(2, " ").collect();
+            let x: Vec<&str> = v[0].split(":").collect(); // 1:1 => [1, 1] 
+            chapter = x[0].to_string();
+            verse_no = x[1].to_string();
+            verse = v[1].to_string();
+
         } else {
-            verses.push(line);
-        }
-    });
+            
 
-    println!("{:?}", verses);
+        }
+    }
 
 }
