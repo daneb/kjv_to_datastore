@@ -11,15 +11,17 @@ where P: AsRef<Path>, {
 }
 
 #[derive(Clone)]
-pub struct Verse {
+pub struct Chapter {
     number: String,
-    text: String
+    verses: Vec<String>,
 }
 
 // Data we have
 // <Book> -> <Chapter>
-//           <Chapter>-><Verse>
-//                      <Number=> Text>
+//           <Chapter>->[Verse]
+
+// Genesis => 1 => "In the beginning"
+//  Key       Value [Key] => [ "In the beginnning" ]                
 
 // Data structure
 // {k;v}
@@ -32,20 +34,23 @@ fn main() {
     let mut verse_no: String = String::from("");
     let mut verse: String = String::from("");
 
-    // let mut bible_store = HashMap::new();
-    let mut bible: HashMap<String, HashMap<String, Verse>> = HashMap::new();
-    let mut chapterHash: HashMap<String, Verse> = HashMap::new();
+    let mut bible: HashMap<String, Chapter> = HashMap::new();
+    let mut verses: Vec<String> = Vec::new();
 
     let filename = "kjv.txt";
     println!("In file {}", filename);
 
-    let matched = Regex::new(r"^\d{1,}:\d{1,}").unwrap();
+    let matched = Regex::new(r"^\d{1,}:\d{1,}").unwrap(); // 1:1 | 2:22 | 15:23
     let lines = read_lines("./kjv_abridged.txt");
     let lines_iter = lines.unwrap();
     
     'outer: for x in lines_iter {
 
         let line = x.unwrap();
+
+        // (1) Collect all the verse
+        // (2) Build Chapter with verses
+        // (3) Add Chapter to Title
         
         if line.is_empty() {
             continue 'outer;
@@ -53,22 +58,19 @@ fn main() {
             title = line.replace("Title:", "");
         } else if matched.is_match(&line) {
 
-            if !verse.is_empty() {
-                chapterHash.insert(chapter, Verse {
-                    number: verse_no,
-                    text: verse,
-                });
-            }
-
             let v: Vec<&str> = line.splitn(2, " ").collect();
             let x: Vec<&str> = v[0].split(":").collect(); // 1:1 => [1, 1] 
             chapter = x[0].to_string();
-            verse_no = x[1].to_string();
             verse = v[1].to_string();
 
-        } else {
-            
+            verse.push_str(" ");
 
+            verses.push(verse);
+
+        } else {
+            if let Some(last) = verses.last_mut() {
+                *last += &line;
+            }
         }
     }
 
