@@ -64,7 +64,6 @@ fn main() {
             verse = v[1].to_string();
 
             verse.push_str(" ");
-
             verses.push(verse);
 
         } else {
@@ -73,5 +72,13 @@ fn main() {
             }
         }
     }
+    
+    let trimmed_title = title.trim();
+    bible.entry(trimmed_title.to_string()).or_insert(Chapter {
+            number: chapter,
+            verses: verses,
+    });
+
+    println!("{:?}", bible.get("Genesis").unwrap().verses);
 
 }
