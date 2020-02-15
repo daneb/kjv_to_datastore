@@ -4,7 +4,7 @@ use std::path::Path;
 use std::collections::HashMap;
 use regex::Regex;
 
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
+pub fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
 where P: AsRef<Path>, {
     let file = File::open(filename)?;
     Ok(io::BufReader::new(file).lines())
@@ -41,7 +41,7 @@ fn main() {
     println!("In file {}", filename);
 
     let matched = Regex::new(r"^\d{1,}:\d{1,}").unwrap(); // 1:1 | 2:22 | 15:23
-    let lines = read_lines("./kjv_abridged.txt");
+    let lines = read_lines("./kjv.txt");
     let lines_iter = lines.unwrap();
     
     'outer: for x in lines_iter {
@@ -55,7 +55,22 @@ fn main() {
         if line.is_empty() {
             continue 'outer;
         } else if line.contains("Title") {
+            
+            if !title.is_empty()
+            {
+                let trimmed_title = title.trim();
+                bible.entry(trimmed_title.to_string()).or_insert(Chapter {
+                        number: chapter.clone(),
+                        verses: verses.clone(),
+                });
+
+                chapter = String::from("");
+                verses.clear();
+            
+            }
+
             title = line.replace("Title:", "");
+            
         } else if matched.is_match(&line) {
 
             let v: Vec<&str> = line.splitn(2, " ").collect();
@@ -72,13 +87,18 @@ fn main() {
             }
         }
     }
-    
-    let trimmed_title = title.trim();
-    bible.entry(trimmed_title.to_string()).or_insert(Chapter {
-            number: chapter,
-            verses: verses,
-    });
 
     println!("{:?}", bible.get("Genesis").unwrap().verses);
 
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_read_lines() {
+        let result = read_lines("./kjv.txt");
+        assert!(result.is_ok());
+    }
 }
