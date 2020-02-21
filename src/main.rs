@@ -40,7 +40,7 @@ pub fn add_new_entry(title: String, chapter: String, verses: Vec<String>, bible:
     });
 }
 
-#[derive(Clone)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct Chapter {
     number: String,
     verses: Vec<String>,
@@ -49,8 +49,8 @@ pub struct Chapter {
 pub fn parse_bible(input: String) -> std::collections::HashMap<String, Chapter> {
     let mut title: String = String::from("");
     let mut chapter: String = String::from("");
-    let mut verse_no: String = String::from("");
-    let mut verse: String = String::from("");
+    let _verse_no: String = String::from("");
+    let _verse: String = String::from("");
 
     let mut bible: HashMap<String, Chapter> = HashMap::new();
     let mut verses: Vec<String> = Vec::new();
@@ -143,16 +143,16 @@ mod tests {
             String::from(" In the beginning was the Word, and the Word was with God, and the Word was God.")];
         let mut bible: HashMap<String, Chapter> = HashMap::new();
 
-        let expectedChapter = Chapter {
-            number: chapter,
-            verses: verses
+        let expected_chapter = Chapter {
+            number: chapter.clone(),
+            verses: verses.clone()
         };
 
-        add_new_entry(title, chapter.clone(), verses, &mut bible);
+        add_new_entry(title, chapter, verses, &mut bible);
 
         assert_eq!(bible.contains_key("Genesis"), true);
-        let result = bible.get_key_value("Geneis");
-        assert_eq!(result.is_some(), true);
+        let result = bible.get_key_value("Genesis");
+        assert!(expected_chapter == *result.unwrap().1);
 
     }
 
