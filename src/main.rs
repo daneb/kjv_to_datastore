@@ -40,6 +40,15 @@ pub fn add_new_entry(title: String, chapter: String, verses: Vec<String>, bible:
     });
 }
 
+pub fn insert_title_chapter_verses(bible: &mut HashMap<String, Chapter>, title: String, chapter: String, verses: Vec<String>)
+{
+    let trimmed_title = title.trim();
+    bible.entry(trimmed_title.to_string()).or_insert(Chapter {
+            number: chapter.clone(),
+            verses: verses.clone(),
+    });
+}
+
 #[derive(Clone, Eq, PartialEq)]
 pub struct Chapter {
     number: String,
@@ -73,15 +82,10 @@ pub fn parse_bible(input: String) -> std::collections::HashMap<String, Chapter> 
             
             if !title.is_empty()
             {
-                let trimmed_title = title.trim();
-                bible.entry(trimmed_title.to_string()).or_insert(Chapter {
-                        number: chapter.clone(),
-                        verses: verses.clone(),
-                });
+                insert_title_chapter_verses(&mut bible, title, chapter, verses.clone());
 
                 chapter = String::from("");
                 verses.clear();
-            
             }
 
             title = line.replace("Title:", "");
@@ -102,6 +106,8 @@ pub fn parse_bible(input: String) -> std::collections::HashMap<String, Chapter> 
             // }
         }
     }
+
+    insert_title_chapter_verses(&mut bible, title, chapter, verses.clone());
 
     return bible;
 }
@@ -126,13 +132,13 @@ mod tests {
         assert_eq!(file_count, line_count);
     }
 
-    // #[test]
-    // fn test_gets_all_titles()   {
-    //     let filename = String::from("./sample_titles.txt");
-    //     let titles = 66;
-    //     let result = parse_bible(filename);
-    //     assert_eq!(titles, result.keys().count());
-    // }
+    #[test]
+    fn test_gets_all_titles()   {
+        let filename = String::from("./tests/sample_titles.txt");
+        let titles = 66;
+        let result = parse_bible(filename);
+        assert_eq!(titles, result.keys().count());
+    }
 
     #[test]
     fn test_adding_title_with_verses() {
