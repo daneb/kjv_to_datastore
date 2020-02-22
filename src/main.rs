@@ -141,6 +141,20 @@ mod tests {
     }
 
     #[test]
+    fn test_keys_are_not_ordered() {
+        let filename = String::from("./tests/sample_titles.txt");
+
+        let book1 = String::from("Genesis");
+        let book2 = String::from("Exodus");
+        let book3 = String::from("Leviticuss");
+
+        let result = parse_bible(filename);
+        assert_ne!(&book1, result.keys().next().unwrap());
+        assert_ne!(&book2, result.keys().next().unwrap());
+        assert_ne!(&book3, result.keys().next().unwrap());
+    }
+
+    #[test]
     fn test_adding_title_with_verses() {
         let title = String::from("Genesis");
         let chapter = String::from("1");
