@@ -4,8 +4,6 @@ use std::path::Path;
 use std::collections::HashMap;
 use regex::Regex;
 
-
-
 // Genesis = key
 // Genesis -> k,v =  int, Vec<String>
 // Genesis -> k,v =  1, ["In the beginning", "And so"]  # 0, 1
@@ -38,7 +36,7 @@ pub struct Chapter {
     verses: Vec<String>,
 }
 
-pub fn parse_bible(input: String) {
+pub fn parse_bible(input: String) -> HashMap<String, Vec<Chapter>> {
     let mut title: String = String::from("");
     let mut chapter: String = String::from("");
     let _verse_no: String = String::from("");
@@ -95,15 +93,17 @@ pub fn parse_bible(input: String) {
             
 
         } else {
-            // if let Some(last) = verses.last_mut() {
-            //     *last += &line;
-            // }
+            // Verses without numbers but part of a verse
+             if let Some(last) = verses.last_mut() {
+                 *last += &line;
+             }
         }
     }
 
     insert_title_chapters(&mut bible, title, chapters);
-}
 
+    return bible;
+}
 
 
 #[cfg(test)]
@@ -124,13 +124,41 @@ mod tests {
         assert_eq!(file_count, line_count);
     }
 
-    // #[test]
-    // fn test_gets_all_titles()   {
-    //     let filename = String::from("./tests/sample_titles.txt");
-    //     let titles = 66;
-    //     let result = parse_bible(filename);
-    //     assert_eq!(titles, result.keys().count());
-    // }
+    #[test]
+    fn test_gets_all_titles()   {
+        let filename = String::from("./tests/sample_titles.txt");
+        let titles = 66;
+        let result = parse_bible(filename);
+        assert_eq!(titles, result.keys().count());
+    }
+
+    #[test]
+    fn test_number_of_chapters() {
+        let filename = String::from("./kjv.txt");
+        let genesis_chapters = 50;
+        let exodus_chapters = 40;
+        let leviticus_chapters = 27;
+        let numbers_chapters = 36;
+        let matthew_chapters = 28;
+        let one_john_chapters = 5;
+        let two_john_chapters = 1;
+        let three_john_chapters = 1;
+        let jude_chapters = 1;
+        let revelation_chapters = 22;
+        let result = parse_bible(filename);
+        assert_eq!(genesis_chapters, result.get("Genesis").unwrap().len()); 
+        assert_eq!(exodus_chapters, result.get("Exodus").unwrap().len()); 
+        assert_eq!(leviticus_chapters, result.get("Leviticus").unwrap().len()); 
+        assert_eq!(numbers_chapters, result.get("Numbers").unwrap().len()); 
+        assert_eq!(matthew_chapters, result.get("Matthew").unwrap().len());
+        assert_eq!(one_john_chapters, result.get("1 John").unwrap().len());
+        assert_eq!(two_john_chapters, result.get("2 John").unwrap().len());
+        assert_eq!(three_john_chapters, result.get("3 John").unwrap().len());
+        assert_eq!(jude_chapters, result.get("Jude").unwrap().len());
+        assert_eq!(revelation_chapters, result.get("Revelation").unwrap().len());
+    }
+
+
 
     // #[test]
     // fn test_keys_are_not_ordered() {
